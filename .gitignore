@@ -1,0 +1,15 @@
+# 本地真实数据（不提交到远程）
+data.json
+backups/
+
+# 写入 data.json 时产生的临时文件
+.data-*.tmp
+
+# 本地工具产物
+.screenshots/
+.trae-html-share-packages/
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
