@@ -550,6 +550,17 @@ input, select { font-family: inherit; }
   color: var(--text-primary);
 }
 
+.section-date {
+  margin-left: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--cloud-deep);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
 /* ========== 任务卡片 ========== */
 .task-cards {
   display: flex;
@@ -1102,6 +1113,20 @@ input, select { font-family: inherit; }
   word-break: break-all;
 }
 
+.ta-status {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.ta-status.is-done { background: var(--green); color: #2E7D32; }
+.ta-status.is-missed { background: #FFE0E0; color: var(--danger); }
+.ta-status.is-none { background: var(--cloud-deep); color: var(--text-secondary); }
+
 .ta-meta {
   display: flex;
   align-items: center;
@@ -1123,6 +1148,65 @@ input, select { font-family: inherit; }
 }
 
 .ta-actions { display: flex; gap: 4px; }
+
+/* ========== 任务列表：按天分组（本周） ========== */
+.week-day {
+  background: white;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.week-day-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--cloud);
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.week-day.is-today .week-day-head {
+  background: linear-gradient(135deg, var(--blue-soft), var(--cyan));
+}
+
+.wd-date { font-size: 15px; }
+.wd-week { font-size: 13px; color: var(--text-secondary); }
+
+.wd-today-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--blue-deep);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.wd-count {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.wd-arrow {
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+
+.week-day.open .wd-arrow { transform: rotate(90deg); }
+
+.week-day-body { display: none; padding: 10px; }
+.week-day.open .week-day-body { display: block; }
 
 /* ========== 奖赏列表 ========== */
 .reward-list {

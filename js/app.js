@@ -538,7 +538,10 @@ const App = {
     const allLogs = ScoreLogModel.list(child.id);
     const todayDue = tasks.filter(t => TaskModel.isDue(t, today));
     const todayDone = todayDue.filter(t => TaskModel.statusOf(t, today) === 'completed').length;
-    const todayLogs = allLogs.filter(l => this.isSameDay(new Date(l.timestamp), today));
+    // 今日操作记录按时间倒序：最新的一条排最上面
+    const todayLogs = allLogs
+      .filter(l => this.isSameDay(new Date(l.timestamp), today))
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     const todayScore = todayLogs.reduce((s, l) => s + l.points, 0);
     const rate = todayDue.length ? Math.round(todayDone / todayDue.length * 100) : 0;
     const leftCount = Math.max(0, todayDue.length - todayDone);
@@ -610,7 +613,7 @@ const App = {
         <!-- 选中日期的任务 -->
         <section class="home-section home-tasks">
           <div class="section-title">
-            <span>${isToday ? '🌟 今日任务' : `📅 ${dateLabel} 任务`}</span>
+            <span>${isToday ? '🌟 今日任务' : `📅 ${dateLabel} 任务`}<span class="section-date">${todayKey(selectedDate)} ${['周日', '周一', '周二', '周三', '周四', '周五', '周六'][selectedDate.getDay()]}</span></span>
             <span class="title-actions">
               ${isToday ? '' : '<button class="link-btn" id="btn-back-today">回到今天</button>'}
               <button class="link-btn btn-add-task" id="btn-quick-add-task">＋ 添加任务</button>
@@ -808,6 +811,62 @@ const App = {
     `;
   },
 
+  // 当前周的 7 天，周一作为一周的开始
+  currentWeekDays(base = new Date()) {
+    const monday = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+    const offset = (monday.getDay() + 6) % 7;
+    monday.setDate(monday.getDate() - offset);
+    const weekCn = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+      return {
+        date: d,
+        key: todayKey(d),
+        md: `${d.getMonth() + 1}月${d.getDate()}日`,
+        week: weekCn[i]
+      };
+    });
+  },
+
+  renderTaskAllCard(t, earned, status = null) {
+    const statusHtml = status === 'completed'
+      ? '<span class="ta-status is-done">✓ 已完成</span>'
+      : status === 'missed'
+        ? '<span class="ta-status is-missed">✗ 未完成</span>'
+        : '<span class="ta-status is-none">未打卡</span>';
+    return `
+      <div class="task-all-card">
+        <div class="ta-left">
+          <div class="ta-title">${t.title}${statusHtml}</div>
+          <div class="ta-meta">
+            ${t.type === 'repeat' ? `<span class="granularity-tag">${this.granularityLabel(t.granularity)}</span>` : ''}
+            ${t.type === 'single' ? '<span class="type-tag-single">单次</span>' : '<span class="type-tag-repeat">重复</span>'}
+            ${t.verifyType === 'countdown' ? `<span class="verify-tag is-countdown">⏱ ${t.countdownMinutes || 5}分钟</span>` : '<span class="verify-tag">✋ 手动</span>'}
+            ${(t.startTime || t.endTime) ? `<span class="time-tag">🕒 ${t.startTime || '--:--'}–${t.endTime || '--:--'}</span>` : ''}
+            ${t.note ? `<span class="ta-note">${t.note}</span>` : ''}
+          </div>
+        </div>
+        <div class="ta-right">
+          <div class="task-points-wrap">
+            <div class="tp-row">
+              <span class="tp-label">任务分</span>
+              <span class="tp-val pts-pos">+${t.points}</span>
+            </div>
+            <div class="tp-row">
+              <span class="tp-label">累计得分</span>
+              <span class="tp-val ${earned >= 0 ? 'pts-pos' : 'pts-neg'}">${earned >= 0 ? '+' : '−'}${Math.abs(earned)}</span>
+            </div>
+            ${t.penalty > 0 ? `<div class="task-points-sub pts-neg">未完成 −${t.penalty}</div>` : ''}
+          </div>
+          <div class="ta-actions">
+            <button class="btn-mini" data-edit-task="${t.id}">编辑</button>
+            <button class="btn-mini btn-danger" data-del-task="${t.id}">删除</button>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
   renderTasksView(child, tasks) {
     // 每个任务累计得分 = 这个任务所有打卡记录合计
     const allLogs = ScoreLogModel.list(child.id);
@@ -815,55 +874,43 @@ const App = {
       .filter(l => l.taskId === taskId)
       .reduce((s, l) => s + (l.points || 0), 0);
 
-    // 全部任务：同样按开始时间排序
-    const ordered = this.sortByStartTime(tasks);
+    const todayK = todayKey();
+    if (!this.weekOpen) this.weekOpen = new Set([todayK]);
+
+    // 只展示本周 7 天里有安排的任务，按天分组、组内按开始时间排序
+    const days = this.currentWeekDays()
+      .map(d => ({ ...d, items: this.sortByStartTime(tasks.filter(t => TaskModel.isDue(t, d.date))) }))
+      .filter(d => d.items.length > 0);
+    const weekCount = new Set(days.flatMap(d => d.items.map(t => t.id))).size;
 
     return `
       <div class="tasks-view">
         <div class="section-title">
-          <span>📋 全部任务 (${ordered.length})</span>
+          <span>📋 本周任务 (${weekCount})</span>
           <button class="btn-primary btn-sm btn-add-task" id="btn-add-task-2">＋ 新增任务</button>
         </div>
-        ${ordered.length === 0 ? `
-          <div class="empty-hint">还没有任务～ 快去添加吧！</div>
-        ` : `
-          <div class="task-list-all">
-            ${ordered.map(t => {
-              const earned = earnedOf(t.id);
-              return `
-                <div class="task-all-card">
-                  <div class="ta-left">
-                    <div class="ta-title">${t.title}</div>
-                    <div class="ta-meta">
-                      ${t.type === 'repeat' ? `<span class="granularity-tag">${this.granularityLabel(t.granularity)}</span>` : ''}
-                      ${t.type === 'single' ? '<span class="type-tag-single">单次</span>' : '<span class="type-tag-repeat">重复</span>'}
-                      ${t.verifyType === 'countdown' ? `<span class="verify-tag is-countdown">⏱ ${t.countdownMinutes || 5}分钟</span>` : '<span class="verify-tag">✋ 手动</span>'}
-                      ${(t.startTime || t.endTime) ? `<span class="time-tag">🕒 ${t.startTime || '--:--'}–${t.endTime || '--:--'}</span>` : ''}
-                      ${t.note ? `<span class="ta-note">${t.note}</span>` : ''}
-                    </div>
-                  </div>
-                  <div class="ta-right">
-                    <div class="task-points-wrap">
-                      <div class="tp-row">
-                        <span class="tp-label">任务分</span>
-                        <span class="tp-val pts-pos">+${t.points}</span>
-                      </div>
-                      <div class="tp-row">
-                        <span class="tp-label">累计得分</span>
-                        <span class="tp-val ${earned >= 0 ? 'pts-pos' : 'pts-neg'}">${earned >= 0 ? '+' : '−'}${Math.abs(earned)}</span>
-                      </div>
-                      ${t.penalty > 0 ? `<div class="task-points-sub pts-neg">未完成 −${t.penalty}</div>` : ''}
-                    </div>
-                    <div class="ta-actions">
-                      <button class="btn-mini" data-edit-task="${t.id}">编辑</button>
-                      <button class="btn-mini btn-danger" data-del-task="${t.id}">删除</button>
-                    </div>
-                  </div>
+        ${days.length === 0 ? `
+          <div class="empty-hint">本周还没有任务～ 点右上角添加一个吧！</div>
+        ` : days.map(d => {
+          const isToday = d.key === todayK;
+          const open = this.weekOpen.has(d.key);
+          return `
+            <div class="week-day ${isToday ? 'is-today' : ''} ${open ? 'open' : ''}" data-day="${d.key}">
+              <button class="week-day-head" data-week-toggle="${d.key}" aria-expanded="${open ? 'true' : 'false'}">
+                <span class="wd-date">${d.md}</span>
+                <span class="wd-week">${d.week}</span>
+                ${isToday ? '<span class="wd-today-tag">今天</span>' : ''}
+                <span class="wd-count">${d.items.length} 项</span>
+                <span class="wd-arrow">▶</span>
+              </button>
+              <div class="week-day-body">
+                <div class="task-list-all">
+                  ${d.items.map(t => this.renderTaskAllCard(t, earnedOf(t.id), TaskModel.statusOf(t, d.date))).join('')}
                 </div>
-              `;
-            }).join('')}
-          </div>
-        `}
+              </div>
+            </div>
+          `;
+        }).join('')}
       </div>
     `;
   },
@@ -1073,6 +1120,17 @@ const App = {
     // 任务 CRUD
     document.getElementById('btn-quick-add-task')?.addEventListener('click', () => this.openTaskModal());
     document.getElementById('btn-add-task-2')?.addEventListener('click', () => this.openTaskModal());
+
+    // 任务列表：按天分组，点日期标题展开 / 折叠
+    document.querySelectorAll('[data-week-toggle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const day = btn.closest('.week-day');
+        const open = day.classList.toggle('open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) this.weekOpen.add(btn.dataset.weekToggle);
+        else this.weekOpen.delete(btn.dataset.weekToggle);
+      });
+    });
     document.getElementById('btn-add-reward-2')?.addEventListener('click', () => this.openRewardModal());
 
     document.querySelectorAll('[data-edit-task]').forEach(btn => {
@@ -1106,6 +1164,8 @@ const App = {
 
   switchView(view) {
     if (view === 'home') this.state.logsCollapsed = true;
+    // 进入任务列表时，默认只展开今天
+    if (view === 'tasks') this.weekOpen = new Set([todayKey()]);
     this.state.view = view;
     this.render();
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
