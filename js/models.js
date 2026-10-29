@@ -345,10 +345,10 @@ const ScoreLogModel = {
 
   // 手动加分 / 扣分：单独落一条记录，方便在「打卡记录」里查看与撤销。
   // manual=true 表示不是任务打卡，不计入连续打卡天数。
-  adjust(childId, points, title) {
+  adjust(childId, points, title, note = '') {
     if (!points) return { ok: false, msg: '分数不能为 0' };
     const all = Storage.getScoreLogs();
-    all.push({
+    const log = {
       id: uid(),
       childId,
       taskId: null,
@@ -358,7 +358,11 @@ const ScoreLogModel = {
       manual: true,
       timestamp: Date.now(),
       periodKey: null
-    });
+    };
+    // 备注仅用于展示，去掉尖括号避免破坏页面结构，最长 30 字
+    const cleanNote = String(note || '').replace(/[<>]/g, '').trim().slice(0, 30);
+    if (cleanNote) log.note = cleanNote;
+    all.push(log);
     Storage.saveScoreLogs(all);
     ChildModel.addScore(childId, points);
     return { ok: true, child: ChildModel.get(childId) };

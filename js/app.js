@@ -717,7 +717,7 @@ const App = {
                   return `
                     <div class="log-item">
                       <div class="log-time">${timeStr}</div>
-                      <div class="log-title">${l.taskTitle}${l.completed === false ? ' <span class="log-missed-tag">未完成</span>' : ''}</div>
+                      <div class="log-title">${l.taskTitle}${l.completed === false ? ' <span class="log-missed-tag">未完成</span>' : ''}${l.note ? `<div class="log-note">备注：${l.note}</div>` : ''}</div>
                       <div class="log-points ${ptsCls}">${l.points >= 0 ? '+' : ''}${l.points}</div>
                       <button class="log-revoke" data-log-id="${l.id}" title="撤销">↩</button>
                     </div>
@@ -782,7 +782,7 @@ const App = {
           return `
             <div class="log-item">
               <div class="log-time">${hhmm}</div>
-              <div class="log-title">${l.taskTitle}${l.completed === false ? ' <span class="log-missed-tag">未完成</span>' : ''}</div>
+              <div class="log-title">${l.taskTitle}${l.completed === false ? ' <span class="log-missed-tag">未完成</span>' : ''}${l.note ? `<div class="log-note">备注：${l.note}</div>` : ''}</div>
               <div class="log-points ${ptsCls}">${l.points >= 0 ? '+' : ''}${l.points}</div>
             </div>
           `;
@@ -1304,6 +1304,10 @@ const App = {
           <input type="number" id="m-adj-points" value="1" min="1" max="999" step="1" inputmode="numeric">
           <div class="file-hint">给「${child.nickname}」${isPlus ? '加' : '扣'}的分数直接算进累计分，会记在打卡记录里，可以撤销。</div>
         </div>
+        <div class="form-row">
+          <label>备注（选填）</label>
+          <input type="text" id="m-adj-note" maxlength="30" placeholder="例如：主动帮忙做家务">
+        </div>
         <div class="modal-actions">
           <button class="btn-secondary" id="m-adj-cancel">取消</button>
           <button class="btn-primary" id="m-adj-ok">${isPlus ? '确认加分' : '确认扣分'}</button>
@@ -1311,19 +1315,21 @@ const App = {
       `);
 
       const input = document.getElementById('m-adj-points');
+      const noteInput = document.getElementById('m-adj-note');
       input.focus();
       input.select();
 
       const submit = () => {
         const n = Math.floor(Number(input.value));
         if (!n || n < 1) { alert('请输入大于 0 的整数分数'); return; }
-        ScoreLogModel.adjust(child.id, isPlus ? n : -n, title);
+        ScoreLogModel.adjust(child.id, isPlus ? n : -n, title, noteInput.value);
         this.closeModal();
         this.render();
       };
 
       document.getElementById('m-adj-ok').addEventListener('click', submit);
       input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+      noteInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
       document.getElementById('m-adj-cancel').addEventListener('click', () => this.closeModal());
     }, title);
   },

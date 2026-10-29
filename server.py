@@ -238,7 +238,7 @@ def main():
     print('=' * 46)
     print('   🚀 周大航任务系统 正在启动')
     print('=' * 46)
-    print(f'   电脑访问:   http://localhost:{PORT}')
+    print(f'   电脑访问:   http://{LAN_IP}:{PORT}')
     print(f'   手机/平板:  http://{LAN_IP}:{PORT}   (需同一 WiFi)')
     print(f'   数据文件:   {DATA_FILE}')
     print(f'   自动备份:   {BACKUP_DIR}')
