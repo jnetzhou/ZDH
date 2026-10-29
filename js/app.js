@@ -597,6 +597,7 @@ const App = {
                 <div class="rh-fill" style="width:${Math.max(pct, 4)}%"></div>
               </div>
               <div class="rh-tip">${tip}</div>
+              ${achieved ? `<button class="rh-new-reward" onclick="App.openRewardModal()">＋ 新增奖赏</button>` : ''}
             </div>
           </div>
         ` : `
@@ -916,9 +917,13 @@ const App = {
   },
 
   renderRewardsView(child, rewards) {
-    const mainReward = rewards.length > 0
-      ? rewards.reduce((a, b) => a.targetScore > b.targetScore ? a : b)
-      : null;
+    // 排序：进行中的奖赏排在前面，同状态里最新创建的排第一，已达成的排最后
+    const ordered = [...rewards].sort((a, b) => {
+      const aDone = child.totalScore >= a.targetScore;
+      const bDone = child.totalScore >= b.targetScore;
+      if (aDone !== bDone) return aDone ? 1 : -1;
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
 
     return `
       <div class="rewards-view">
@@ -926,18 +931,19 @@ const App = {
           <span>🎁 奖赏墙 (${rewards.length})</span>
           <button class="btn-primary btn-sm" id="btn-add-reward-2">+ 新增</button>
         </div>
-        ${rewards.length === 0 ? `
+        ${ordered.length === 0 ? `
           <div class="empty-hint">还没有奖赏～ 设置一个目标让小朋友努力吧！</div>
         ` : `
           <div class="reward-list">
-            ${rewards.map(r => {
+            ${ordered.map(r => {
               const pct = RewardModel.progress(r, child.totalScore);
               const achieved = child.totalScore >= r.targetScore;
+              const remain = Math.max(0, r.targetScore - child.totalScore);
               return `
                 <div class="reward-card ${achieved ? 'achieved' : ''}">
-                  <div class="reward-image">${this.renderAvatar(r.image)}</div>
+                  <div class="reward-image" title="点击放大预览">${this.renderAvatar(r.image)}</div>
                   <div class="reward-body">
-                    <div class="reward-name">${r.name} ${achieved ? '<span class="achieved-badge">✨ 已达成</span>' : ''}</div>
+                    <div class="reward-name">${r.name}<span class="reward-status ${achieved ? 'is-done' : 'is-none'}">${achieved ? '✓ 已完成' : `未完成 · 还差 ${remain} 分`}</span></div>
                     <div class="reward-target">目标 ${r.targetScore} 分</div>
                     <div class="progress-bar small">
                       <div class="progress-fill" style="width: ${pct}%"></div>
@@ -1048,9 +1054,12 @@ const App = {
       btn.addEventListener('click', () => this.openScoreAdjustModal(Number(btn.dataset.adj)));
     });
 
-    // 点奖赏卡片左侧的图 → 放大预览
+    // 点奖赏卡片左侧的图 → 放大预览（首页冲刺卡 + 奖赏墙都支持）
     const rewardImg = document.querySelector('.reward-hero:not(.empty) .rh-icon');
-    if (rewardImg) rewardImg.addEventListener('click', () => this.openRewardImagePreview());
+    if (rewardImg) rewardImg.addEventListener('click', () => this.openRewardImagePreview(rewardImg));
+    document.querySelectorAll('.reward-image').forEach(img => {
+      img.addEventListener('click', () => this.openRewardImagePreview(img));
+    });
 
     // 打卡按钮（打卡会产生积分，属于数据修改，锁上时先验证密码）
     document.querySelectorAll('.check-btn[data-task-id]').forEach(btn => {
@@ -1309,8 +1318,8 @@ const App = {
   },
 
   // 点奖赏图放大预览：图标（SVG）和上传的图片都能放大，还能再放大/缩小
-  openRewardImagePreview() {
-    const icon = document.querySelector('.reward-hero .rh-icon');
+  openRewardImagePreview(sourceEl) {
+    const icon = sourceEl || document.querySelector('.reward-hero .rh-icon');
     if (!icon) return;
 
     const box = document.createElement('div');

@@ -1219,7 +1219,7 @@ input, select { font-family: inherit; }
   display: flex;
   align-items: center;
   gap: 14px;
-  background: white;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8E6 100%);
   border-radius: var(--radius-lg);
   padding: 16px;
   box-shadow: var(--shadow-card);
@@ -1229,21 +1229,25 @@ input, select { font-family: inherit; }
 
 .reward-card.achieved {
   border-color: var(--amber-deep);
-  background: linear-gradient(135deg, white, #FFFBEB);
+  background: linear-gradient(135deg, #FFFFFF 0%, #E8FBEF 100%);
 }
 
 .reward-image {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  width: 84px;
+  height: 64px;
+  border-radius: 12px;
   background: var(--amber);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 30px;
   flex-shrink: 0;
   overflow: hidden;
+  cursor: zoom-in;
+  transition: transform 0.15s;
 }
+
+.reward-image:hover { transform: scale(1.04); }
 
 .reward-image img {
   width: 100%;
@@ -1259,14 +1263,18 @@ input, select { font-family: inherit; }
   margin-bottom: 2px;
 }
 
-.achieved-badge {
-  font-size: 11px;
-  color: var(--amber-deep);
-  background: var(--amber);
-  padding: 1px 8px;
-  border-radius: 10px;
-  margin-left: 6px;
+.reward-status {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: middle;
 }
+
+.reward-status.is-done { background: var(--green); color: #2E7D32; }
+.reward-status.is-none { background: var(--cloud-deep); color: var(--text-secondary); }
 
 .reward-target {
   font-size: 12px;
@@ -3264,3 +3272,24 @@ body {
     animation: none;
   }
 }
+
+/* 奖赏已达成后，冲刺卡里的「新增奖赏」按钮（漫画风） */
+.rh-new-reward {
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  margin-top: 10px;
+  padding: 7px 16px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 3px 0 var(--ink);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.rh-new-reward:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+.rh-new-reward:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
