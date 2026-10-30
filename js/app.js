@@ -2029,7 +2029,13 @@ const App = {
       if (isEdit) {
         RewardModel.update(existing.id, payload);
       } else {
+        // 新增奖赏：把累计分数清零，新奖赏从 0 开始攒
+        const before = ChildModel.get(childId).totalScore || 0;
+        if (before > 0 && !confirm(`新增奖赏会把累计分数清零（当前 ${before} 分），确定吗？`)) return;
         RewardModel.create(payload);
+        if (before > 0) {
+          ScoreLogModel.adjust(childId, -before, `新增奖赏「${name}」，分数清零`);
+        }
       }
       this.closeModal();
       this.render();
