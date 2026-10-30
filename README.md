@@ -170,6 +170,10 @@ python backup_tool.py --restore data-20261027-153000.json
 **根目录出现 `.data-*.tmp` 文件？**
 这是写入 `data.json` 时的临时文件，正常会被自动替换掉；若因中断残留，确认 `data.json` 正常后可直接删除。
 
-## 版权
+## 版权与许可
 
-© 2026 周大航任务系统 · jnetzhou
+Copyright (c) 2026 jnetzhou <742408364@qq.com>
+
+本项目采用 GNU Affero 通用公共许可证第 3 版（AGPL-3.0-or-later）授权，完整协议文本见 [LICENSE](LICENSE)。
+
+AGPL 要求：你若修改本项目并通过网络向他人提供服务，需要以同一许可证公开修改后的源代码。

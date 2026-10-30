@@ -4,6 +4,10 @@ setlocal
 title 周大航任务系统 - 备份与恢复
 cd /d "%~dp0"
 
+rem 周大航任务系统 - 数据备份与恢复
+rem Copyright (c) 2026 jnetzhou <742408364@qq.com>
+rem SPDX-License-Identifier: AGPL-3.0-or-later（详见根目录 LICENSE）
+
 where python >nul 2>&1
 if not errorlevel 1 (
   python "%~dp0backup_tool.py"

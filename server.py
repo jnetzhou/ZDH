@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# 周大航任务系统 - 本地服务
+# Copyright (c) 2026 jnetzhou <742408364@qq.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later（详见根目录 LICENSE）
 """
 周大航任务系统 - 本地服务
 1. 托管当前目录的静态文件（HTML/CSS/JS）

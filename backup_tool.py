@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# 周大航任务系统 - 数据备份 / 恢复工具
+# Copyright (c) 2026 jnetzhou <742408364@qq.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later（详见根目录 LICENSE）
 """
 周大航任务系统 - 数据备份 / 恢复工具（管理员用）
 

@@ -1,3 +1,9 @@
+/*!
+ * 周大航任务系统 - 月历组件
+ * Copyright (c) 2026 jnetzhou <742408364@qq.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later（详见根目录 LICENSE）
+ */
+
 // 月历组件：渲染指定月份日历，标注打卡情况 + 选中日期高亮
 
 const Calendar = {

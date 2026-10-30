@@ -1,3 +1,9 @@
+/*!
+ * 周大航任务系统 - 业务模型与积分计算
+ * Copyright (c) 2026 jnetzhou <742408364@qq.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later（详见根目录 LICENSE）
+ */
+
 // 业务模型层：小朋友、任务、奖赏、打卡记录的 CRUD 和积分计算
 
 // ========== 工具函数 ==========

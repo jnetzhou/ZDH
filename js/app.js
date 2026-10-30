@@ -1,3 +1,9 @@
+/*!
+ * 周大航任务系统 - 页面渲染与交互
+ * Copyright (c) 2026 jnetzhou <742408364@qq.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later（详见根目录 LICENSE）
+ */
+
 // 主应用入口：UI 事件绑定 + 视图渲染
 
 const App = {

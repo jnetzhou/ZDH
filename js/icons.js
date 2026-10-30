@@ -1,3 +1,9 @@
+/*!
+ * 周大航任务系统 - 图标库
+ * Copyright (c) 2026 jnetzhou <742408364@qq.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later（详见根目录 LICENSE）
+ */
+
 // 漫画风 Q 版图标库：全部内联 SVG（粗描边 + 糖果色），不依赖网络图片
 // 任务图标 key 会存到任务数据里，新增图标只要在这里加一项即可
 

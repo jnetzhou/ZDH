@@ -1,3 +1,9 @@
+/*!
+ * 周大航任务系统 - 数据同步层
+ * Copyright (c) 2026 jnetzhou <742408364@qq.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later（详见根目录 LICENSE）
+ */
+
 // 数据层：localStorage + 本地 data.json 双向同步
 // - 所有读写仍走 localStorage（同步 API，页面逻辑无需改）
 // - 每次保存后防抖推送一份完整快照到 /api/data，由 server.py 落盘到 data.json
